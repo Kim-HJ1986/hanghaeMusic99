@@ -3,13 +3,53 @@
 <head>
     <meta charset="UTF-8">
     <title>Title</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
     <script>
+
+        $(document).ready(function () {
+            listing();
+        });
+
+        function listing() {
+            $.ajax({
+                type: 'GET',
+                url: '/musicdetail?title={{ title }}',
+                data: {},
+                success: function (response) {
+                    let music = response['music']
+                    rank = music['rank']
+                    title = music['title']
+                    singer = music['singer']
+                    image_url = music['image_url']
+
+                    let temp_html = `<div class="col" onclick="openDetailPage()">
+                                        <div class="card h-100">
+                                            <img src="${image_url}"
+                                                 class="card-img-top">
+                                            <div class="card-body">
+                                                <h4 class="mycomment">${rank}위</h4>
+                                                <h5 id = 'title' class="card-title">${title}</h5>
+                                                <p class="card-text">${singer}</p>
+
+                                            </div>
+                                        </div>
+                                    </div>`
+                    $('#cards-box').append(temp_html)
+
+                }
+            })
+        }
 
     </script>
 </head>
 <body>
-    <h1>상세페이지</h1>
-    <button onclick="window.location.href = '/'">메인으로</button>
+<h1>상세페이지</h1>
+<button onclick="window.location.href = '/'">메인으로</button>
+<h2>{{ title }}</h2>
+<div class="mycards">
+    <div class="row row-cols-1 row-cols-md-4 g-4" id="cards-box">
 
+    </div>
+</div>
 </body>
 </html>

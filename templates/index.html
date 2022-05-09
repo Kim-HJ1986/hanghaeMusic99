@@ -11,8 +11,9 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"
             integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM"
             crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-cookie/1.4.1/jquery.cookie.js"></script>
 
-    <title>스파르타 피디아</title>
+    <title>항해 뮤직 99!</title>
 
     <link href="https://fonts.googleapis.com/css2?family=Gowun+Dodum&display=swap" rel="stylesheet">
 
@@ -88,6 +89,16 @@
         }
     </style>
     <script>
+      // 로그아웃은 내가 가지고 있는 토큰만 쿠키에서 없애면 됩니다.
+      function logout(){
+        $.removeCookie('mytoken');
+        alert('로그아웃!')
+        window.location.href='/login'
+      }
+
+    </script>
+    <script>
+
         $(document).ready(function () {
             listing();
         });
@@ -95,95 +106,61 @@
         function listing() {
             $.ajax({
                 type: 'GET',
-                url: '/movie',
+                url: '/music',
                 data: {},
                 success: function (response) {
-                    let rows = response['movie']
-                    for (let i=0; i < rows.length; i++){
-                        let comment = rows[i]['comment']
-                        let desc = rows[i]['desc']
-                        let image = rows[i]['image']
-                        let star = rows[i]['star']
+                    let rows = response['music']
+                    for (let i = 0; i < rows.length; i++){
+                        let id = rows[i]['id']
+                        let rank = rows[i]['rank']
                         let title = rows[i]['title']
+                        let singer = rows[i]['singer']
+                        let image_url = rows[i]['image_url']
 
-                        let star_image = '⭐'.repeat(star)
-
-                        let temp_html = `<div class="col">
-                                            <div class="card h-100">
-                                                <img src="${image}"
+                        let temp_html = `<div class="col" onclick="openDetailPage()">
+                                            <div class="card h-100" id = ${id}>
+                                                <img src="${image_url}"
                                                      class="card-img-top">
                                                 <div class="card-body">
-                                                    <h5 class="card-title">${title}</h5>
-                                                    <p class="card-text">${desc}</p>
-                                                    <p>${star_image}</p>
-                                                    <p class="mycomment">${comment}</p>
+                                                    <h4 class="mycomment">${rank}위</h4>
+                                                    <h5 id = 'title' class="card-title">${title}</h5>
+                                                    <p class="card-text">${singer}</p>
+
                                                 </div>
                                             </div>
                                         </div>`
                         $('#cards-box').append(temp_html)
+
                     }
-                }
+                    }
             })
         }
 
-        function posting() {
-            let url = $('#url').val()
-            let star = $('#star').val()
-            let comment = $('#comment').val()
+        function openDetailPage() {
 
+            let title = $('#title').text
+            console.log(title)
             $.ajax({
-                type: 'POST',
-                url: '/movie',
-                data: {url_give: url, star_give: star, comment_give: comment},
+                type: 'GET',
+                url: '/detail?title=INVU',
+                data: {},
                 success: function (response) {
-                    alert(response['msg'])
-                    window.location.reload()
+                    title = response['music']['title']
+                    window.location.href='details/'+title
                 }
             });
         }
 
-        function open_box() {
-            $('#post-box').show()
-        }
-
-        function close_box() {
-            $('#post-box').hide()
-        }
     </script>
 </head>
 
 <body>
 <div class="mytitle">
     <h1>항해 Music 99!</h1>
-    <button onclick="open_box()">영화 기록하기</button>
-    <a href="/detail">상세 페이지로</a>
-    <h3>{{ name }}</h3>
+    <h5 class="subtitle">나의 닉네임은: {{nickname}}</h5>
+    <button class="button is-danger" onclick="logout()">로그아웃하기</button>
 </div>
-<div class="mypost" id="post-box">
-    <div class="form-floating mb-3">
-        <input id="url" type="email" class="form-control" placeholder="name@example.com">
-        <label>영화URL</label>
-    </div>
-    <div class="input-group mb-3">
-        <label class="input-group-text" for="inputGroupSelect01">별점</label>
-        <select class="form-select" id="star">
-            <option selected>-- 선택하기 --</option>
-            <option value="1">⭐</option>
-            <option value="2">⭐⭐</option>
-            <option value="3">⭐⭐⭐</option>
-            <option value="4">⭐⭐⭐⭐</option>
-            <option value="5">⭐⭐⭐⭐⭐</option>
-        </select>
-    </div>
-    <div class="form-floating">
-        <textarea id="comment" class="form-control" placeholder="Leave a comment here"></textarea>
-        <label for="floatingTextarea2">코멘트</label>
-    </div>
-    <div class="mybtns">
-        <button onclick="posting()" type="button" class="btn btn-dark">기록하기</button>
-        <button onclick="close_box()" type="button" class="btn btn-outline-dark">닫기</button>
-    </div>
-</div>
+
 <div class="mycards">
     <div class="row row-cols-1 row-cols-md-4 g-4" id="cards-box">
 
