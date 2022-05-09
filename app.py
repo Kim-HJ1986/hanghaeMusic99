@@ -3,7 +3,6 @@ app = Flask(__name__)
 
 import requests
 from bs4 import BeautifulSoup
-import billboard
 
 from pymongo import MongoClient
 import certifi
