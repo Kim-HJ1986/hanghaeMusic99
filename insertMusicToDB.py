@@ -19,9 +19,12 @@ musics_50 = soup.select('#lst50')
 musics_100 = soup.select('#lst100')
 all_musics = musics_50 + musics_100
 
-#print(musics)
-id = 1
+#print(all_musics)
+#lst50
+#lst50 > td:nth-child(8) > div > button
 for music in all_musics:
+    id = music.attrs
+    id = id['data-song-no']
     rank = music.select_one('td:nth-child(2) > div > span.rank ').text
     title = music.select_one('td:nth-child(6) > div > div > div.ellipsis.rank01 > span > a').text
     singer = music.select_one('td:nth-child(6) > div > div > div.ellipsis.rank02 > a').text
@@ -36,5 +39,4 @@ for music in all_musics:
     }
 
     db.music_list.insert_one(doc)
-    id += 1
 

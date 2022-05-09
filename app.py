@@ -1,5 +1,6 @@
 from flask import Flask, render_template, jsonify, request, session, redirect, url_for
-
+import requests
+from bs4 import BeautifulSoup
 app = Flask(__name__)
 
 from pymongo import MongoClient
@@ -8,7 +9,7 @@ import certifi
 ca = certifi.where()
 client = MongoClient('mongodb+srv://test:sparta@cluster0.6pe7g.mongodb.net/Cluster0?retryWrites=true&w=majority', tlsCAFile=ca)
 db = client.hanghaemusic99
-
+headers = {'User-Agent' : 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)AppleWebKit/537.36 (KHTML, like Gecko) Chrome/73.0.3683.86 Safari/537.36'}
 
 # JWT 토큰을 만들 때 필요한 비밀문자열입니다. 아무거나 입력해도 괜찮습니다.
 # 이 문자열은 서버만 알고있기 때문에, 내 서버에서만 토큰을 인코딩(=만들기)/디코딩(=풀기) 할 수 있습니다.
@@ -53,9 +54,9 @@ def login():
 def register():
     return render_template('register.html')
 
-@app.route('/details/<title>')
-def detail(title):
-    return render_template('detail.html', title = title)
+@app.route('/detail/<id>')
+def detail(id):
+    return render_template('detail.html', id = id)
 
 @app.route('/music', methods=['GET'])
 def music_get():
@@ -143,18 +144,17 @@ def api_valid():
     except jwt.exceptions.DecodeError:
         return jsonify({'result': 'fail', 'msg': '로그인 정보가 존재하지 않습니다.'})
 
-@app.route("/detail", methods=["GET"])
-def select_music_get():
-    title = request.args.get('title')
-    print(title)
-    music = db.music_list.find_one({'title':title}, {'_id': False})
-    return jsonify({'music': music})
-
 @app.route("/musicdetail", methods=["GET"])
 def select_music_detail():
-    title = request.args.get('title')
-    music = db.music_list.find_one({'title':title}, {'_id': False})
-    return jsonify({'music': music})
+    id = request.args.get('id')
+    data = requests.get('https://www.melon.com/song/detail.htm?songId='+id, headers=headers)
+    soup = BeautifulSoup(data.text, 'html.parser')
+    image = soup.select_one('#downloadfrm > div > div > div.thumb > a > img')['src']
+    album = soup.select_one('#downloadfrm > div > div > div.entry > div.meta > dl > dd:nth-child(2) > a').text
+    date = soup.select_one('#downloadfrm > div > div > div.entry > div.meta > dl > dd:nth-child(4)').text
+    lyric = soup.select_one('#d_video_summary').text
+    music = db.music_list.find_one({'id':id}, {'_id': False})
+    return jsonify({'music': music, 'image': image, 'album': album, 'date': date, 'lyric': lyric})
 
 
 if __name__ == '__main__':

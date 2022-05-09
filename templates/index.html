@@ -117,15 +117,14 @@
                         let singer = rows[i]['singer']
                         let image_url = rows[i]['image_url']
 
-                        let temp_html = `<div class="col" onclick="openDetailPage()">
-                                            <div class="card h-100" id = ${id}>
+                        let temp_html = `<div class="col" onclick="window.location.href='detail/'+${id}">
+                                            <div class="card h-100">
                                                 <img src="${image_url}"
                                                      class="card-img-top">
                                                 <div class="card-body">
                                                     <h4 class="mycomment">${rank}위</h4>
-                                                    <h5 id = 'title' class="card-title">${title}</h5>
+                                                    <h5 class="card-title">${title}</h5>
                                                     <p class="card-text">${singer}</p>
-
                                                 </div>
                                             </div>
                                         </div>`
@@ -135,22 +134,6 @@
                     }
             })
         }
-
-        function openDetailPage() {
-
-            let title = $('#title').text
-            console.log(title)
-            $.ajax({
-                type: 'GET',
-                url: '/detail?title=INVU',
-                data: {},
-                success: function (response) {
-                    title = response['music']['title']
-                    window.location.href='details/'+title
-                }
-            });
-        }
-
     </script>
 </head>
 
