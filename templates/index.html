@@ -21,6 +21,13 @@
         * {
             font-family: 'Gowun Dodum', sans-serif;
         }
+        .liked {
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            font-weight: 1000;
+        }
 
         .mytitle {
             width: 100%;
@@ -110,6 +117,7 @@
                 data: {},
                 success: function (response) {
                     let rows = response['music']
+                    let liked = response['liked']
                     for (let i = 0; i < rows.length; i++){
                         let id = rows[i]['id']
                         let rank = rows[i]['rank']
@@ -117,21 +125,71 @@
                         let singer = rows[i]['singer']
                         let image_url = rows[i]['image_url']
 
-                        let temp_html = `<div class="col" onclick="window.location.href='detail/'+${id}">
+                        if (liked[i]['user_list'].includes( '{{ id }}' )){
+                            let temp_html = `<div class="col" >
                                             <div class="card h-100">
+                                                <div onclick="window.location.href='detail/'+${id}">
                                                 <img src="${image_url}"
                                                      class="card-img-top">
+                                                </div>
                                                 <div class="card-body">
                                                     <h4 class="mycomment">${rank}위</h4>
                                                     <h5 class="card-title">${title}</h5>
                                                     <p class="card-text">${singer}</p>
+                                                    <p class="card-text liked" onclick="likedMinus(${id}, '{{ id }}')">❤️${liked[i]['count']}</p>
                                                 </div>
                                             </div>
                                         </div>`
-                        $('#cards-box').append(temp_html)
+                            $('#cards-box').append(temp_html)
+                        }else{
+                            let temp_html = `<div class="col" >
+                                            <div class="card h-100">
+                                                <div onclick="window.location.href='detail/'+${id}">
+                                                <img src="${image_url}"
+                                                     class="card-img-top">
+                                                </div>
+                                                <div class="card-body">
+                                                    <h4 class="mycomment">${rank}위</h4>
+                                                    <h5 class="card-title">${title}</h5>
+                                                    <p class="card-text">${singer}</p>
+                                                    <p class="card-text liked" onclick="likedPlus(${id}, '{{ id }}')">🤍${liked[i]['count']}</p>
+                                                </div>
+                                            </div>
+                                        </div>`
+                            $('#cards-box').append(temp_html)
+                        }
+
 
                     }
                     }
+            })
+        }
+
+        function likedPlus(songid, username){
+            $.ajax({
+                type: 'POST',
+                url: '/liked/plus',
+                data: {
+                    songid: songid,
+                    username: username
+                },
+                success: function (response) {
+                    window.location.reload()
+                }
+            })
+        }
+
+        function likedMinus(songid, username){
+            $.ajax({
+                type: 'POST',
+                url: '/liked/minus',
+                data: {
+                    songid: songid,
+                    username: username
+                },
+                success: function (response) {
+                    window.location.reload()
+                }
             })
         }
     </script>

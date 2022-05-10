@@ -20,7 +20,7 @@ import jwt
 
 # 토큰에 만료시간을 줘야하기 때문에, datetime 모듈도 사용합니다.
 import datetime
-
+from datetime import datetime, timedelta
 # 회원가입 시엔, 비밀번호를 암호화하여 DB에 저장해두는 게 좋습니다.
 # 그렇지 않으면, 개발자(=나)가 회원들의 비밀번호를 볼 수 있으니까요.^^;
 import hashlib
@@ -36,8 +36,8 @@ def home():
     try:
         # 가져온 토큰 값을 디코드 해준 후 유저 정보 (아이디) 사용
         payload = jwt.decode(token_receive, SECRET_KEY, algorithms=['HS256'])
-        user_info = db.user.find_one({"id": payload['id']})
-        return render_template('index.html', nickname=user_info["nick"])
+        user_info = db.users.find_one({"username": payload['id']})
+        return render_template('index.html', nickname=user_info["nickname"], id = user_info["username"])
     except jwt.ExpiredSignatureError:
         return redirect(url_for("login", msg="로그인 시간이 만료되었습니다."))
     except jwt.exceptions.DecodeError:
@@ -56,12 +56,42 @@ def register():
 
 @app.route('/detail/<id>')
 def detail(id):
-    return render_template('detail.html', id = id)
+    # 쿠키에 저장된 토큰 값 가져오기
+    token_receive = request.cookies.get('mytoken')
+    try:
+        # 가져온 토큰 값을 디코드 해준 후 유저 정보 (아이디) 사용
+        payload = jwt.decode(token_receive, SECRET_KEY, algorithms=['HS256'])
+        user_info = db.users.find_one({"username": payload['id']})
+
+        return render_template('detail.html', id = id, username=user_info["username"], nickname=user_info["nickname"])
+
+    except jwt.ExpiredSignatureError:
+        return redirect(url_for("login", msg="로그인 시간이 만료되었습니다."))
+    except jwt.exceptions.DecodeError:
+        return redirect(url_for("login", msg="로그인 정보가 존재하지 않습니다."))
 
 @app.route('/music', methods=['GET'])
 def music_get():
     music_list = list(db.music_list.find({}, {'_id': False}))
-    return jsonify({'music': music_list})
+    liked = list(db.liked.find({}, {'_id': False}))
+    return jsonify({'music': music_list, 'liked': liked})
+
+@app.route('/review', methods=['GET'])
+def review_get():
+    songid_receive = request.args.get('songid')
+    review_list = list(db.review_list.find({'songid':songid_receive}, {'_id': False}))
+    return jsonify({'review_list': review_list})
+
+@app.route("/review/add", methods=["POST"])
+def review_add():
+    songid_receive = request.form['songid_give']
+    nickname_receive = request.form['nickname_give']
+    comment_receive = request.form['comment_give']
+
+    doc = {'songid': songid_receive, 'nickname': nickname_receive, 'comment': comment_receive}
+    db.review_list.insert_one(doc)
+
+    return jsonify({'msg':'리뷰가 등록되었습니다.'})
 
 #################################
 ##  로그인을 위한 API            ##
@@ -70,47 +100,72 @@ def music_get():
 # [회원가입 API]
 # id, pw, nickname을 받아서, mongoDB에 저장합니다.
 # 저장하기 전에, pw를 sha256 방법(=단방향 암호화. 풀어볼 수 없음)으로 암호화해서 저장합니다.
-@app.route('/api/register', methods=['POST'])
-def api_register():
-    id_receive = request.form['id_give']
-    pw_receive = request.form['pw_give']
+@app.route('/sign_up/save', methods=['POST'])
+def sign_up():
     nickname_receive = request.form['nickname_give']
+    username_receive = request.form['username_give']
+    password_receive = request.form['password_give']
+    password_hash = hashlib.sha256(password_receive.encode('utf-8')).hexdigest()
+    doc = {
+        "username": username_receive,                               # 아이디
+        "password": password_hash,                                  # 비밀번호
+        "nickname": nickname_receive                               # 닉네임
+    }
+    db.users.insert_one(doc)
+    return jsonify({'result': 'success'})
 
-    # 해쉬함수를 활용해서 비밀번호를 암호화함
-    pw_hash = hashlib.sha256(pw_receive.encode('utf-8')).hexdigest()
+@app.route('/sign_up/check_dup', methods=['POST'])
+def check_dup():
+    username_receive = request.form['username_give']
+    exists = bool(db.users.find_one({"username": username_receive}))
+    return jsonify({'result': 'success', 'exists': exists})
 
-    db.user.insert_one({'id': id_receive, 'pw': pw_hash, 'nick': nickname_receive})
+@app.route('/liked/plus', methods=['POST'])
+def plusLiked():
+    songid = request.form['songid']
+    username = request.form['username']
+    liked = db.liked.find_one({'songid': songid})
+    liked_users = liked['user_list']
+    liked_count = liked['count']
+    liked_count += 1
+    liked_users.append(username)
+    db.liked.update_one({'songid': songid}, {'$set': {'user_list': liked_users}})
+    db.liked.update_one({'songid': songid}, {'$set': {'count': liked_count}})
 
     return jsonify({'result': 'success'})
 
+@app.route('/liked/minus', methods=['POST'])
+def minusLiked():
+    songid = request.form['songid']
+    username = request.form['username']
+    liked = db.liked.find_one({'songid': songid})
+    liked_users = liked['user_list']
+    liked_count = liked['count']
+    liked_count -= 1
+    liked_users.remove(username)
+    db.liked.update_one({'songid': songid}, {'$set': {'user_list': liked_users}})
+    db.liked.update_one({'songid': songid}, {'$set': {'count': liked_count}})
+
+    return jsonify({'result': 'success'})
 
 # [로그인 API]
 # id, pw를 받아서 맞춰보고, 토큰을 만들어 발급합니다.
-@app.route('/api/login', methods=['POST'])
-def api_login():
-    id_receive = request.form['id_give']
-    pw_receive = request.form['pw_give']
+@app.route('/sign_in', methods=['POST'])
+def sign_in():
+    # 로그인
+    username_receive = request.form['username_give']
+    password_receive = request.form['password_give']
 
-    # 회원가입 때와 같은 방법으로 pw를 암호화합니다.
-    pw_hash = hashlib.sha256(pw_receive.encode('utf-8')).hexdigest()
+    pw_hash = hashlib.sha256(password_receive.encode('utf-8')).hexdigest()
+    result = db.users.find_one({'username': username_receive, 'password': pw_hash})
 
-    # id, 암호화된pw을 가지고 해당 유저를 찾습니다.
-    result = db.user.find_one({'id': id_receive, 'pw': pw_hash})
-
-    # 찾으면 JWT 토큰을 만들어 발급합니다.
     if result is not None:
-        # JWT 토큰에는, payload와 시크릿키가 필요합니다.
-        # 시크릿키가 있어야 토큰을 디코딩(=풀기) 해서 payload 값을 볼 수 있습니다.
-        # 아래에선 id와 exp를 담았습니다. 즉, JWT 토큰을 풀면 유저ID 값을 알 수 있습니다.
-        # exp에는 만료시간을 넣어줍니다. 만료시간이 지나면, 시크릿키로 토큰을 풀 때 만료되었다고 에러가 납니다.
         payload = {
-            'id': id_receive,
-            'exp': datetime.datetime.utcnow() + datetime.timedelta(seconds=500)
+         'id': username_receive,
+         'exp': datetime.utcnow() + timedelta(seconds=60 * 60 * 24)  # 로그인 24시간 유지
         }
-        # decode는 삭제됨.
         token = jwt.encode(payload, SECRET_KEY, algorithm='HS256')
 
-        # token을 줍니다.
         return jsonify({'result': 'success', 'token': token})
     # 찾지 못하면
     else:
@@ -136,7 +191,7 @@ def api_valid():
 
         # payload 안에 id가 들어있습니다. 이 id로 유저정보를 찾습니다.
         # 여기에선 그 예로 닉네임을 보내주겠습니다.
-        userinfo = db.user.find_one({'id': payload['id']}, {'_id': 0})
+        userinfo = db.users.find_one({'id': payload['id']}, {'_id': 0})
         return jsonify({'result': 'success', 'nickname': userinfo['nick']})
     except jwt.ExpiredSignatureError:
         # 위를 실행했는데 만료시간이 지났으면 에러가 납니다.
