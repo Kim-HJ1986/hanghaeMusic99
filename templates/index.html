@@ -126,7 +126,7 @@
                         let image_url = rows[i]['image_url']
 
                         if (liked[i]['user_list'].includes( '{{ id }}' )){
-                            let temp_html = `<div class="col" >
+                            let temp_html = `<div class="col">
                                             <div class="card h-100">
                                                 <div onclick="window.location.href='detail/'+${id}">
                                                 <img src="${image_url}"
@@ -136,7 +136,7 @@
                                                     <h4 class="mycomment">${rank}위</h4>
                                                     <h5 class="card-title">${title}</h5>
                                                     <p class="card-text">${singer}</p>
-                                                    <p class="card-text liked" onclick="likedMinus(${id}, '{{ id }}')">❤️${liked[i]['count']}</p>
+                                                    <p id = ${id} class="card-text liked" onclick="likedMinus(${id}, '{{ id }}')">❤️${liked[i]['count']}</p>
                                                 </div>
                                             </div>
                                         </div>`
@@ -152,7 +152,7 @@
                                                     <h4 class="mycomment">${rank}위</h4>
                                                     <h5 class="card-title">${title}</h5>
                                                     <p class="card-text">${singer}</p>
-                                                    <p class="card-text liked" onclick="likedPlus(${id}, '{{ id }}')">🤍${liked[i]['count']}</p>
+                                                    <p id = ${id} class="card-text liked" onclick="likedPlus(${id}, '{{ id }}')">🤍${liked[i]['count']}</p>
                                                 </div>
                                             </div>
                                         </div>`
@@ -174,7 +174,14 @@
                     username: username
                 },
                 success: function (response) {
-                    window.location.reload()
+                    //window.location.reload()
+                    if (response['liked'] == '중복'){
+                        likedMinus(songid, username)
+                    }else{
+                        let ptag = $(`#${songid}`)
+                        ptag.text('❤️'+ response['liked'])
+                    }
+
                 }
             })
         }
@@ -188,7 +195,13 @@
                     username: username
                 },
                 success: function (response) {
-                    window.location.reload()
+                    //window.location.reload()
+                    if (response['liked'] == '중복'){
+                        likedPlus(songid, username)
+                    }else{
+                        let ptag = $(`#${songid}`)
+                        ptag.text('🤍'+ response['liked'])
+                    }
                 }
             })
         }

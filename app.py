@@ -128,11 +128,14 @@ def plusLiked():
     liked_users = liked['user_list']
     liked_count = liked['count']
     liked_count += 1
+    if username in liked_users:
+        return jsonify({'result': 'success', 'liked': '중복'})
     liked_users.append(username)
     db.liked.update_one({'songid': songid}, {'$set': {'user_list': liked_users}})
     db.liked.update_one({'songid': songid}, {'$set': {'count': liked_count}})
+    liked = db.liked.find_one({'songid': songid})
 
-    return jsonify({'result': 'success'})
+    return jsonify({'result': 'success', 'liked': liked['count']})
 
 @app.route('/liked/minus', methods=['POST'])
 def minusLiked():
@@ -142,11 +145,15 @@ def minusLiked():
     liked_users = liked['user_list']
     liked_count = liked['count']
     liked_count -= 1
-    liked_users.remove(username)
-    db.liked.update_one({'songid': songid}, {'$set': {'user_list': liked_users}})
-    db.liked.update_one({'songid': songid}, {'$set': {'count': liked_count}})
+    if (username in liked_users):
+        liked_users.remove(username)
+        db.liked.update_one({'songid': songid}, {'$set': {'user_list': liked_users}})
+        db.liked.update_one({'songid': songid}, {'$set': {'count': liked_count}})
+        liked = db.liked.find_one({'songid': songid})
+        return jsonify({'result': 'success', 'liked': liked['count']})
+    else:
+        return jsonify({'result': 'success', 'liked': '중복'})
 
-    return jsonify({'result': 'success'})
 
 # [로그인 API]
 # id, pw를 받아서 맞춰보고, 토큰을 만들어 발급합니다.
