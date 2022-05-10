@@ -30,7 +30,7 @@
               rgba(0, 0, 0, 0.5),
               rgba(0, 0, 0, 0.5)
             ),
-            url("https://movie-phinf.pstatic.net/20210715_95/1626338192428gTnJl_JPEG/movie_image.jpg");
+            url("/static/music.jpeg");
           background-position: center;
           background-size: cover;
 
@@ -67,9 +67,9 @@
 
     <script>
             $(document).ready(function () {
-                searching()
+                initListing()
             });
-            function searching() {
+            function initListing() {
               limit = 10;
               init = 0;
               $("#musicList").empty();
@@ -82,7 +82,6 @@
                 url: "/music_list",
                 data: {},
                 success: function (response) {
-                    console.log(response)
                   let rows = response["musics"];
                   if (limitLength < rows.length) {
                     for (let i = initLength; i < limitLength; i++) {
@@ -98,10 +97,10 @@
                                             <img src="${image}" class="card-img-top" alt="...">
                                           </a>
                                           <div class="card-body">
-                                           <h3 class="card-rank">${rank}위</h3>
-                                            <h5 class="card-title">${title}</h5>
-                                            <p class="card-text">${artist}</p>
-                                            <p class="card-text">${album}</p>
+                                           <h3 class="card-rank" style="font-size: xx-large">${rank}위</h3>
+                                            <h5 class="card-title" style="font-size: x-large">${title}</h5>
+                                            <p class="card-text" style="color: grey">${artist}</p>
+                                            <p class="card-text" style="color: grey">${album}</p>
                                           </div>
                                         </div>
                                       </div>`;
@@ -156,42 +155,6 @@
 </div>
 <div class="list" id="list">
     <div class="row row-cols-1 row-cols-md-5 g-4" id="musicList">
-{#  <div class="col">#}
-{#    <div class="card h-100">#}
-{#      <img src="..." class="card-img-top" alt="...">#}
-{#      <div class="card-body">#}
-{#        <h5 class="card-title">Card title</h5>#}
-{#        <p class="card-text">This is a longer card with supporting text below as a natural lead-in to additional content. This content is a little bit longer.</p>#}
-{#      </div>#}
-{#    </div>#}
-{#  </div>#}
-{#  <div class="col">#}
-{#    <div class="card h-100">#}
-{#      <img src="..." class="card-img-top" alt="...">#}
-{#      <div class="card-body">#}
-{#        <h5 class="card-title">Card title</h5>#}
-{#        <p class="card-text">This is a short card.</p>#}
-{#      </div>#}
-{#    </div>#}
-{#  </div>#}
-{#  <div class="col">#}
-{#    <div class="card h-100">#}
-{#      <img src="..." class="card-img-top" alt="...">#}
-{#      <div class="card-body">#}
-{#        <h5 class="card-title">Card title</h5>#}
-{#        <p class="card-text">This is a longer card with supporting text below as a natural lead-in to additional content.</p>#}
-{#      </div>#}
-{#    </div>#}
-{#  </div>#}
-{#  <div class="col">#}
-{#    <div class="card h-100">#}
-{#      <img src="..." class="card-img-top" alt="...">#}
-{#      <div class="card-body">#}
-{#        <h5 class="card-title">Card title</h5>#}
-{#        <p class="card-text">This is a longer card with supporting text below as a natural lead-in to additional content. This content is a little bit longer.</p>#}
-{#      </div>#}
-{#    </div>#}
-{#  </div>#}
 </div>
 </div>
 </div>

@@ -30,7 +30,7 @@
               rgba(0, 0, 0, 0.5),
               rgba(0, 0, 0, 0.5)
             ),
-            url("https://movie-phinf.pstatic.net/20210715_95/1626338192428gTnJl_JPEG/movie_image.jpg");
+            url("/static/music.jpeg");
           background-position: center;
           background-size: cover;
 
@@ -82,11 +82,11 @@
     </style>
 
     <script>
-
-        $(document).ready(function () {
+         $(document).ready(function () {
             get_comments()
             $('.count').text(num2str({{ data.count_heart }}))
         })
+
 
         function time2str(date) {
             let today = new Date()
@@ -171,7 +171,7 @@
                                                     </blockquote>
                                                     <button onclick="delete_comments(${num})" type="button" class="btn btn-outline-danger">삭제</button>
                                                     <!-- Button trigger modal -->
-                                                    <button type="button" class="btn btn-outline-success" data-bs-toggle="modal" data-bs-target="#exampleModal">
+                                                    <button type="button" id="modalBtn" class="btn btn-outline-success" data-bs-toggle="modal" data-bs-target="#exampleModal">
                                                       수정
                                                     </button>
 
@@ -186,7 +186,7 @@
                                                           <div class="modal-body">
                                                             <div class="form-floating">
                                                                 <textarea class="form-control" placeholder="Leave a comment here" id="updateComment${num}"
-                                                                          style="height: 100px"></textarea>
+                                                                          style="height: 100px" ></textarea>
                                                                 <label for="comment">리뷰</label>
                                                             </div>
                                                           </div>
@@ -224,6 +224,7 @@
                     }
                 })
             }
+
 
         function update_comments(num){
             let title = $('#title').text()
