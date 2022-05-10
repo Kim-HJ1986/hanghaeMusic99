@@ -1,15 +1,339 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
+
 <head>
-    <meta charset="UTF-8">
-    <title>Title</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet"
+          integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.1/font/bootstrap-icons.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"
+            integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM"
+            crossorigin="anonymous"></script>
+    <title>HanghaeMusic99</title>
+
+    <link href="https://fonts.googleapis.com/css2?family=Nanum+Pen+Script&display=swap" rel="stylesheet">
+
+    <style>
+        * {
+          font-family: "Nanum Pen Script", cursive;
+          box-sizing: border-box;
+        }
+        .title-form {
+          width: 100%;
+          height: 250px;
+
+          background-image: linear-gradient(
+              0deg,
+              rgba(0, 0, 0, 0.5),
+              rgba(0, 0, 0, 0.5)
+            ),
+            url("https://movie-phinf.pstatic.net/20210715_95/1626338192428gTnJl_JPEG/movie_image.jpg");
+          background-position: center;
+          background-size: cover;
+
+          color: white;
+          display: flex;
+          flex-direction: row;
+          justify-content: center;
+          align-items: center;
+          font-size: xx-large;
+        }
+        .title{
+            color: white;
+            position: relative;
+            font-size: xxx-large;
+        }
+
+        #card{
+            margin: 20px auto 0 auto;
+        }
+
+        .comment_form{
+            width: 95%;
+            max-width: 1000px;
+            margin: 20px auto 0px auto;
+            padding: 20px;
+            box-shadow: 0px 0px 3px 0px gray;
+        }
+        .comment_form > button{
+            margin-top: 20px;
+
+        }
+        .card{
+            width: 95%;
+            max-width: 1000px;
+            margin: 20px auto 0px auto;
+            padding: 20px;
+            box-shadow: 0px 0px 3px 0px gray;
+        }
+        .card-body > button{
+            position: relative;
+            float:right;
+            margin: 10px;
+        }
+        #heart:hover{
+            cursor:pointer;
+        }
+
+
+    </style>
+
     <script>
+
+        $(document).ready(function () {
+            get_comments()
+            $('.count').text(num2str({{ data.count_heart }}))
+        })
+
+        function time2str(date) {
+            let today = new Date()
+            let time = (today - date) / 1000 / 60  // 분
+
+            if (time < 60) {
+                return parseInt(time) + "분 전"
+            }
+            time = time / 60  // 시간
+            if (time < 24) {
+                return parseInt(time) + "시간 전"
+            }
+            time = time / 24
+            if (time < 7) {
+                return parseInt(time) + "일 전"
+            }
+            return `${date.getFullYear()}년 ${date.getMonth() + 1}월 ${date.getDate()}일`
+        }
+
+        function comments() {
+            let comment = $("#comment").val()
+            let today = new Date().toISOString()
+            let title = $('#title').text()
+            if(comment == ""){
+                alert('리뷰를 입력하세요')
+            }
+            else {
+                $.ajax({
+                    type: "POST",
+                    url: "/comments",
+                    data: {
+                        comment_give: comment,
+                        date_give: today,
+                        title_give: title
+                    },
+                    success: function (response) {
+                        alert(response['msg'])
+                        window.location.reload()
+                    }
+                })
+            }
+        }
+        function num2str(count) {
+            if (count > 10000) {
+                return parseInt(count / 1000) + "k"
+            }
+            if (count > 500) {
+                return parseInt(count / 100) / 10 + "k"
+            }
+            if (count == 0) {
+                return ""
+            }
+            return count
+        }
+
+        function get_comments() {
+            let title = $('#title').text()
+                $.ajax({
+                    type: "GET",
+                    url: "/get_comments",
+                    data: {title_give: title},
+                    success: function (response) {
+                        if (response["result"] == "success") {
+                            let rows = response["comments"]
+                            for (let i = 0; i < rows.length; i++) {
+                                let comment = rows[i]
+                                let time_post = new Date(comment['date'])
+                                let time_before = time2str(time_post)
+                                let temp_html = ``
+                                let num= comment['num']
+                                if(comment['userId']==response['userId']){
+                                    temp_html=`<div class="card" id="${num}">
+                                                     <div class="card-body">
+                                                    <blockquote class="blockquote mb-0">
+                                                      <p>${comment['comment']}</p>
+                                                        <br>
+                                                      <footer class="blockquote-footer">
+                                                            ${comment['username']}
+                                                            <cite title="Source Title" style="font-size: medium">@${comment['userId']}</cite>
+                                                            <small>${time_before}</small>
+                                                        </footer>
+                                                    </blockquote>
+                                                    <button onclick="delete_comments(${num})" type="button" class="btn btn-outline-danger">삭제</button>
+                                                    <!-- Button trigger modal -->
+                                                    <button type="button" class="btn btn-outline-success" data-bs-toggle="modal" data-bs-target="#exampleModal">
+                                                      수정
+                                                    </button>
+
+                                                    <!-- Modal -->
+                                                    <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                                                      <div class="modal-dialog">
+                                                        <div class="modal-content">
+                                                          <div class="modal-header">
+                                                            <h5 class="modal-title" id="exampleModalLabel">수정</h5>
+                                                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                          </div>
+                                                          <div class="modal-body">
+                                                            <div class="form-floating">
+                                                                <textarea class="form-control" placeholder="Leave a comment here" id="updateComment${num}"
+                                                                          style="height: 100px"></textarea>
+                                                                <label for="comment">리뷰</label>
+                                                            </div>
+                                                          </div>
+                                                          <div class="modal-footer">
+                                                            <button onclick="update_comments(${num})" type="button" class="btn btn-outline-primary">수정</button>
+                                                            <button type="button" class="btn btn-outline-dark" data-bs-dismiss="modal">닫기</button>
+                                                          </div>
+                                                        </div>
+                                                      </div>
+                                                    </div>
+
+                                                  </div>
+
+                                                </div>`
+                                }
+                                else{
+                                    temp_html=`<div class="card" id="${num}">
+                                                     <div class="card-body">
+                                                    <blockquote class="blockquote mb-0">
+                                                      <p>${comment['comment']}</p>
+                                                        <br>
+                                                      <footer class="blockquote-footer">
+                                                            ${comment['username']}
+                                                            <cite title="Source Title" style="font-size: medium">@${num}</cite>
+                                                            <small>${time_before}</small>
+                                                        </footer>
+                                                    </blockquote>
+                                                  </div>
+                                                </div>`
+                                }
+
+                                $(".comment_list").append(temp_html)
+                            }
+                        }
+                    }
+                })
+            }
+
+        function update_comments(num){
+            let title = $('#title').text()
+            let comment = $('#updateComment' + num).val()
+            let today = new Date().toISOString()
+                $.ajax({
+                    type: "POST",
+                    url: "/comments/update",
+                    data: {title_give: title, comment_give: comment, num_give: num, date_give:today},
+                    success: function (response) {
+                        alert(response["msg"])
+                        window.location.reload()
+                    }
+                });
+        }
+
+        function delete_comments(num){
+            let title = $('#title').text()
+                $.ajax({
+                    type: "POST",
+                    url: "/comments/delete",
+                    data: {title_give: title, num_give: num},
+                    success: function (response) {
+                        alert(response["msg"])
+                        window.location.reload()
+                    }
+                });
+        }
+
+        function toggle_like(){
+            let title = $('#title').text()
+            {#let userId = {{ data.userId }}#}
+            if ($('i').hasClass('bi-suit-heart-fill')) {
+                $.ajax({
+                    type: "POST",
+                    url: "/update_like",
+                    data: {
+                        title_give: title,
+                        action_give: "unlike"
+                    },
+                    success: function (response) {
+                        $('i').addClass("bi-suit-heart").removeClass("bi-suit-heart-fill")
+                        $('.count').text(num2str(response['count']))
+                    }
+                })
+            }
+            else{
+                $.ajax({
+                    type: "POST",
+                    url: "/update_like",
+                    data: {
+                        title_give: title,
+                        action_give: "like"
+                    },
+                    success: function (response) {
+                        $('i').addClass("bi-suit-heart-fill").removeClass("bi-suit-heart")
+                        $('.count').text(num2str(response['count']))
+                    }
+                })
+            }
+
+        }
 
     </script>
 </head>
-<body>
-    <h1>상세페이지</h1>
-    <button onclick="window.location.href = '/'">메인으로</button>
 
+<body>
+<div class = title-form>
+    <div class="form-floating mb-3">
+        <div class = title id ="title">{{ data.title }}</div>
+        <button onclick="window.location.href='/'" type="button" class="btn btn-secondary" style="display: block; margin: auto">뒤로가기</button>
+    </div>
+</div>
+
+<div class="card mb-3" id="card" style="max-width: 1500px;">
+  <div class="row g-0">
+      <div class="col-md-3" id="image">
+          <a href="{{ data.video }}">
+              <img src="{{ data.image }}" alt="..." height="320">
+          </a>
+      </div>
+    <div class="col-md-8">
+      <div class="card-body">
+        <h5 class="card-title" style="font-size: xxx-large">{{ data.title }}</h5>
+        <p class="card-artist" style="color: green; font-size: xx-large">{{ data.artist }}</p>
+        <p class="card-album" style="font-size: 1.5rem" ><small class="text-muted">앨범 : {{ data.album }}</small></p>
+        <p class="card-date" style="font-size: 1.5rem"><small class="text-muted">발매일 : {{ data.date }}</small></p>
+        <p class="card-genre" style="font-size: 1.5rem"><small class="text-muted">장르 : {{ data.genre }}</small></p>
+        {% if data.heart_by_me %}
+          <i class="bi bi-suit-heart-fill" id="heart" onclick="toggle_like()" style="color:red; font-size: x-large;"><small class="count" style="color:black; margin-left: 5px">{{ data.count_heart }}</small></i>
+{#        <i class="bi bi-suit-heart-fill"></i>#}
+        {% else %}
+            <i class="bi bi-suit-heart" id="heart" onclick="toggle_like()" style="font-size: x-large;"><small class="count" style="margin-left: 5px">{{ data.count_heart }}</small></i>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class = "comment_form">
+    <div class="form-floating">
+        <textarea class="form-control" placeholder="Leave a comment here" id="comment"
+                  style="height: 100px"></textarea>
+        <label for="comment">리뷰</label>
+    </div>
+    <button onclick="comments()" type="button" class="btn btn-dark">등록</button>
+</div>
+<div class ="comment_list">
+
+</div>
+<footer class="footer" style="margin: 20px"></footer>
 </body>
 </html>
