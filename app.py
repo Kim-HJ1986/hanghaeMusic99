@@ -1,7 +1,29 @@
 from flask import Flask, render_template, jsonify, request, session, redirect, url_for
 import requests
 from bs4 import BeautifulSoup
+
+import insertMusicToDB
+
 app = Flask(__name__)
+
+from apscheduler.schedulers.background import BackgroundScheduler
+
+@app.route("/schedule")
+def trigger():
+    return insertMusicToDB.insertDBTest()
+
+#apscheduler 선언
+sched = BackgroundScheduler(daemon=True)
+
+#apscheduler실행설정, 3초마다 반복실행
+sched.add_job(trigger, 'interval', seconds=3)
+
+#apscheduler실행설정, Cron방식으로, 1주-53주간실행, 월요일부터일요일까지실행, 21시에실행
+sched.add_job(trigger,'cron', week='1-53', day_of_week='0-6', hour='21')
+
+#apscheduler실행
+sched.start()
+
 
 from pymongo import MongoClient
 import certifi
