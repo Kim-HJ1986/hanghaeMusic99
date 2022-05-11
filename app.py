@@ -8,6 +8,8 @@ from datetime import datetime, timedelta
 import certifi
 import requests
 from bs4 import BeautifulSoup
+from apscheduler.schedulers.background import BackgroundScheduler
+import music_update
 ca = certifi.where()
 
 app = Flask(__name__)
@@ -34,12 +36,11 @@ def home():
 def get_musicList():
     token_receive = request.cookies.get('mytoken')
     try:
+
         musics = list(db.musics.find({}, {'_id': False}).limit(99))
         return jsonify({"result": "success", "musics": musics})
     except (jwt.ExpiredSignatureError, jwt.exceptions.DecodeError):
         return redirect(url_for("login"))
-
-
 
 @app.route('/login')
 def login():
@@ -87,19 +88,36 @@ def detail(number):
     except (jwt.ExpiredSignatureError, jwt.exceptions.DecodeError):
         return redirect(url_for("login"))
 
-# @app.route('/user/<username>')
-# def user(username):
-#     # 각 사용자의 프로필과 글을 모아볼 수 있는 공간
-#     token_receive = request.cookies.get('mytoken')
-#     try:
-#         payload = jwt.decode(token_receive, SECRET_KEY, algorithms=['HS256'])
-#         status = (username == payload["id"])  # 내 프로필이면 True, 다른 사람 프로필 페이지면 False
-#
-#         user_info = db.users.find_one({"username": username}, {"_id": False})
-#         return render_template('user.html', user_info=user_info, status=status)
-#     except (jwt.ExpiredSignatureError, jwt.exceptions.DecodeError):
-#         return redirect(url_for("home"))
+@app.route('/user/<userId>')
+def user(userId):
+    # 각 사용자의 프로필과 글을 모아볼 수 있는 공간
+    token_receive = request.cookies.get('mytoken')
+    try:
+        payload = jwt.decode(token_receive, SECRET_KEY, algorithms=['HS256'])
+        status = (userId == payload["id"])  # 내 프로필이면 True, 다른 사람 프로필 페이지면 False
+        user_info = db.users.find_one({"userId": userId}, {"_id": False})
+        return render_template('user.html', user_info=user_info, status=status)
+    except (jwt.ExpiredSignatureError, jwt.exceptions.DecodeError):
+        return redirect(url_for("home"))
 
+@app.route('/user/<userId>/likeMusic')
+def get_likeMusic(userId):
+    token_receive = request.cookies.get('mytoken')
+    try:
+        payload = jwt.decode(token_receive, SECRET_KEY, algorithms=['HS256'])
+        user_info = db.users.find_one({"userId": userId}, {"_id": False})
+        all_likes = list(db.likes.find({'userId': user_info['userId']}, {'_id': False}))
+        all_music=[]
+        for like in all_likes:
+            musics = list(db.musics.find({'title': like['title']}, {'_id': False}))
+            count_heart = db.likes.count_documents({"title": like['title']})
+            heart_by_me = bool(db.likes.find_one({"title": like['title'], "userId": payload['id']}))
+            musics.append(count_heart)
+            musics.append(heart_by_me)
+            all_music.append(musics)
+        return jsonify({"result": "success", "musics": all_music})
+    except (jwt.ExpiredSignatureError, jwt.exceptions.DecodeError):
+        return redirect(url_for("login"))
 
 @app.route('/sign_in', methods=['POST'])
 def sign_in():
@@ -134,9 +152,9 @@ def sign_up():
         "username": username_receive,                               # 이름
         "password": password_hash,                                  # 비밀번호
                                                                     # 프로필 이름 기본값은 아이디
-        # "profile_pic": "",                                          # 프로필 사진 파일 이름
-        # "profile_pic_real": "profile_pics/profile_placeholder.png", # 프로필 사진 기본 이미지
-        # "profile_info": ""                                          # 프로필 한 마디
+        "profile_pic": "",                                          # 프로필 사진 파일 이름
+        "profile_pic_real": "/profile_placeholder.png", # 프로필 사진 기본 이미지
+        "profile_info": ""                                          # 프로필 한 마디
     }
     db.users.insert_one(doc)
     return jsonify({'result': 'success'})
@@ -155,6 +173,22 @@ def save_img():
     try:
         payload = jwt.decode(token_receive, SECRET_KEY, algorithms=['HS256'])
         # 프로필 업데이트
+        userId = payload['id']
+        name_receive = request.form["name_give"]
+        about_receive = request.form["about_give"]
+        new_doc = {
+            "username": name_receive,
+            "profile_info": about_receive
+        }
+        if 'pic_give' in request.files:
+            file = request.files["pic_give"]
+            filename = secure_filename(file.filename)
+            extension = filename.split(".")[-1]
+            file_path = f"/{userId}.{extension}"
+            file.save("./static/" + file_path)
+            new_doc["profile_pic"] = filename
+            new_doc["profile_pic_real"] = file_path
+        db.users.update_one({'userId': payload['id']}, {'$set': new_doc})
         return jsonify({"result": "success", 'msg': '프로필을 업데이트했습니다.'})
     except (jwt.ExpiredSignatureError, jwt.exceptions.DecodeError):
         return redirect(url_for("login"))
@@ -174,6 +208,7 @@ def comments():
             "title": title_receive,
             "userId": user_info["userId"],
             "username": user_info["username"],
+            "userpic": user_info['profile_pic_real'],
             "comment": comment_receive,
             "date": date_receive,
             "num": num+1
@@ -189,12 +224,16 @@ def get_comments():
     token_receive = request.cookies.get('mytoken')
     try:
         payload = jwt.decode(token_receive, SECRET_KEY, algorithms=['HS256'])
-        user_info = db.users.find_one({"userId": payload["id"]})
+        user_info = db.users.find_one({"userId": payload["id"]}, {'_id': False})
         title_receive = request.args.get('title_give')
         comments = list(db.comments.find({'title': title_receive}).sort("date", -1).limit(20))
+        userInfo={
+            'userId': user_info['userId'],
+            'profile_pic': user_info['profile_pic_real']
+        }
         for comment in comments:
             comment["_id"] = str(comment["_id"])
-        return jsonify({"result": "success", "comments": comments, "userId": user_info['userId']})
+        return jsonify({"result": "success", "comments": comments, "userInfo": userInfo})
     except (jwt.ExpiredSignatureError, jwt.exceptions.DecodeError):
         return redirect(url_for("login"))
 
@@ -252,6 +291,22 @@ def update_like():
     except (jwt.ExpiredSignatureError, jwt.exceptions.DecodeError):
         return redirect(url_for("login"))
 
+
+@app.route("/schedule")
+def trigger():
+    return music_update.music_update()
+
+#apscheduler 선언
+sched = BackgroundScheduler(daemon=True)
+
+#apscheduler실행설정, 6시간마다 반복실행
+sched.add_job(trigger, 'interval', hours=6)
+
+#apscheduler실행설정, Cron방식으로, 1주-53주간실행, 월요일부터일요일까지실행, 21시에실행
+# sched.add_job(trigger,'cron', week='1-53', day_of_week='0-6', hour='21')
+
+#apscheduler실행
+sched.start()
 
 if __name__ == '__main__':
     app.run('0.0.0.0', port=5000, debug=True)
