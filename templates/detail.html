@@ -77,6 +77,11 @@
         #heart:hover{
             cursor:pointer;
         }
+        #userImage{
+            height: 100px;
+            width: 100px;
+            border-radius: 70%;
+        }
 
 
     </style>
@@ -151,16 +156,21 @@
                     success: function (response) {
                         if (response["result"] == "success") {
                             let rows = response["comments"]
+                            console.log(response)
+                            let profile_pic = response['userInfo']['profile_pic']
+                            console.log(profile_pic)
                             for (let i = 0; i < rows.length; i++) {
                                 let comment = rows[i]
                                 let time_post = new Date(comment['date'])
                                 let time_before = time2str(time_post)
                                 let temp_html = ``
                                 let num= comment['num']
-                                if(comment['userId']==response['userId']){
+                                if(comment['userId']==response['userInfo']['userId']){
                                     temp_html=`<div class="card" id="${num}">
                                                      <div class="card-body">
-                                                    <blockquote class="blockquote mb-0">
+                                                    <img id="userImage" src="/static/${profile_pic}"/>
+                                                      <blockquote class="blockquote mb-0">
+                                                        <br>
                                                       <p>${comment['comment']}</p>
                                                         <br>
                                                       <footer class="blockquote-footer">
@@ -186,7 +196,7 @@
                                                           <div class="modal-body">
                                                             <div class="form-floating">
                                                                 <textarea class="form-control" placeholder="Leave a comment here" id="updateComment${num}"
-                                                                          style="height: 100px" ></textarea>
+                                                                          style="height: 100px" >${comment['comment']}</textarea>
                                                                 <label for="comment">리뷰</label>
                                                             </div>
                                                           </div>
@@ -205,12 +215,14 @@
                                 else{
                                     temp_html=`<div class="card" id="${num}">
                                                      <div class="card-body">
+                                                    <img id="userImage" src="/static/${comment['userpic']}"/>
                                                     <blockquote class="blockquote mb-0">
+                                                        <br>
                                                       <p>${comment['comment']}</p>
                                                         <br>
                                                       <footer class="blockquote-footer">
                                                             ${comment['username']}
-                                                            <cite title="Source Title" style="font-size: medium">@${num}</cite>
+                                                            <cite title="Source Title" style="font-size: medium">@${comment['userId']}</cite>
                                                             <small>${time_before}</small>
                                                         </footer>
                                                     </blockquote>
@@ -230,15 +242,20 @@
             let title = $('#title').text()
             let comment = $('#updateComment' + num).val()
             let today = new Date().toISOString()
+            if(comment==""){
+                alert('리뷰를 입력하세요')
+            }
+            else {
                 $.ajax({
                     type: "POST",
                     url: "/comments/update",
-                    data: {title_give: title, comment_give: comment, num_give: num, date_give:today},
+                    data: {title_give: title, comment_give: comment, num_give: num, date_give: today},
                     success: function (response) {
                         alert(response["msg"])
                         window.location.reload()
                     }
                 });
+            }
         }
 
         function delete_comments(num){
@@ -317,7 +334,7 @@
           <i class="bi bi-suit-heart-fill" id="heart" onclick="toggle_like()" style="color:red; font-size: x-large;"><small class="count" style="color:black; margin-left: 5px">{{ data.count_heart }}</small></i>
 {#        <i class="bi bi-suit-heart-fill"></i>#}
         {% else %}
-            <i class="bi bi-suit-heart" id="heart" onclick="toggle_like()" style="font-size: x-large;"><small class="count" style="margin-left: 5px">{{ data.count_heart }}</small></i>
+            <i class="bi bi-suit-heart" id="heart" onclick="toggle_like()" style="color:red; font-size: x-large;"><small class="count" style="color:black; margin-left: 5px">{{ data.count_heart }}</small></i>
         {% endif %}
       </div>
     </div>
