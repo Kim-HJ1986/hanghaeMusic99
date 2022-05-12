@@ -25,3 +25,4 @@ Chapter1 웹개발 미니 프로젝트 (항해뮤직99)
 - AWS EC2(Ubuntu 18.04 LTS)
 
 ### 3. 실행화면
+[![항해뮤직99!](https://hanghae99.spartacodingclub.kr/exhibitions/mini1/7/A)](https://youtu.be/BWq5Yj9aafs)
