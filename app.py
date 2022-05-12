@@ -75,7 +75,7 @@ def detail(number):
         count_heart = db.likes.count_documents({"title": music[0]['title']})
         heart_by_me = bool(db.likes.find_one({"title": music[0]['title'], "userId": payload['id']}))
         data= {
-            "username":user_info["username"],
+            "username": user_info["username"],
             "userId": user_info["userId"],
             'title': music[0]['title'],
             'image': music[0]['image'],
