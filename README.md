@@ -1,5 +1,5 @@
 # hanghaeMusic99 🎧
-Chapter1 웹개발 미니 프로젝트 (항해뮤직99)
+## Chapter1 웹개발 미니 프로젝트 (항해뮤직99)
 
 ### music platform에서 가져온 실시간 Top 99위 까지의 노래에 자유롭게 코멘트를 작성하며 소통할 수 있는 웹입니다.
 
@@ -20,6 +20,7 @@ Chapter1 웹개발 미니 프로젝트 (항해뮤직99)
 `Front-end`
 - JQuery 3.5.1
 - Bulma 0.9.2
+- Bootstrap 5.0.2
 
 `deploy`
 - AWS EC2(Ubuntu 18.04 LTS)
