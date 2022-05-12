@@ -14,12 +14,13 @@ ca = certifi.where()
 
 app = Flask(__name__)
 app.config["TEMPLATES_AUTO_RELOAD"] = True
-# app.config['UPLOAD_FOLDER'] = "./static/profile_pics"
+app.config['UPLOAD_FOLDER'] = "./static/profile_pics"
 
 SECRET_KEY = 'SPARTA'
 client = MongoClient('mongodb+srv://test:sparta@cluster0.zgm92.mongodb.net/Cluster0?retryWrites=true&w=majority', tlsCAFile=ca)
 db = client.hanghae_music99
 
+#메인페이지
 @app.route('/')
 def home():
     token_receive = request.cookies.get('mytoken')
@@ -32,15 +33,16 @@ def home():
     except jwt.exceptions.DecodeError:
         return redirect(url_for("login", msg="로그인 정보가 존재하지 않습니다."))
 
+#db에 저장된 음악 리스트들을 가져옴(99개까지)
 @app.route('/music_list')
 def get_musicList():
-    token_receive = request.cookies.get('mytoken')
-    try:
 
-        musics = list(db.musics.find({}, {'_id': False}).limit(99))
-        return jsonify({"result": "success", "musics": musics})
-    except (jwt.ExpiredSignatureError, jwt.exceptions.DecodeError):
-        return redirect(url_for("login"))
+    musics = list(db.musics.find({}, {'_id': False}).limit(99))
+
+    return jsonify({"result": "success", "musics": musics})
+
+
+
 
 @app.route('/login')
 def login():
@@ -94,9 +96,8 @@ def user(userId):
     token_receive = request.cookies.get('mytoken')
     try:
         payload = jwt.decode(token_receive, SECRET_KEY, algorithms=['HS256'])
-        status = (userId == payload["id"])  # 내 프로필이면 True, 다른 사람 프로필 페이지면 False
         user_info = db.users.find_one({"userId": userId}, {"_id": False})
-        return render_template('user.html', user_info=user_info, status=status)
+        return render_template('user.html', user_info=user_info)
     except (jwt.ExpiredSignatureError, jwt.exceptions.DecodeError):
         return redirect(url_for("home"))
 
@@ -133,7 +134,8 @@ def sign_in():
          'id': userId_receive,
          'exp': datetime.utcnow() + timedelta(seconds=60 * 60 * 24)  # 로그인 24시간 유지
         }
-        token = jwt.encode(payload, SECRET_KEY, algorithm='HS256')
+        # token = jwt.encode(payload, SECRET_KEY, algorithm='HS256').decode('utf-8')  #배포환경에선 decode를 작성해줘야함
+        token = jwt.encode(payload, SECRET_KEY, algorithm='HS256') #로컬환경에선 decode 삭제
 
         return jsonify({'result': 'success', 'token': token})
     # 찾지 못하면
@@ -151,9 +153,8 @@ def sign_up():
         "userId": userId_receive,                                   # 아이디
         "username": username_receive,                               # 이름
         "password": password_hash,                                  # 비밀번호
-                                                                    # 프로필 이름 기본값은 아이디
         "profile_pic": "",                                          # 프로필 사진 파일 이름
-        "profile_pic_real": "/profile_placeholder.png", # 프로필 사진 기본 이미지
+        "profile_pic_real": "/profile_placeholder.png",             # 프로필 사진 기본 이미지
         "profile_info": ""                                          # 프로필 한 마디
     }
     db.users.insert_one(doc)
@@ -182,10 +183,10 @@ def save_img():
         }
         if 'pic_give' in request.files:
             file = request.files["pic_give"]
-            filename = secure_filename(file.filename)
-            extension = filename.split(".")[-1]
-            file_path = f"/{userId}.{extension}"
-            file.save("./static/" + file_path)
+            filename = secure_filename(file.filename)        #파일 이름을 filename에 저장
+            extension = filename.split(".")[-1]              #파일 확장자를 extention에 저장 [-1]은 리스트에서 뒤에서 첫번째라는 의미(사진의 확장자를 가져와야하기때문)
+            file_path = f"/{userId}.{extension}"             #파일 경로를 새로 지정
+            file.save("./static/profile_pics" + file_path)               #static/profile_pics 폴더에 파일 저장
             new_doc["profile_pic"] = filename
             new_doc["profile_pic_real"] = file_path
         db.users.update_one({'userId': payload['id']}, {'$set': new_doc})

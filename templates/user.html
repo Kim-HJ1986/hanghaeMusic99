@@ -178,9 +178,6 @@
             function update_profile(){
                 let username = $('#input_name').val()
                 let pic_image = $('#input_pic')[0].files[0]
-                let a = $('#input_pic')
-                console.log(pic_image)
-                console.log(a)
                 let about = $('#textarea_about').val()
                 let form_data = new FormData()
                 form_data.append("name_give", username)
@@ -210,7 +207,7 @@
 <body>
 <div class = title-form>
     <div class="form-floating mb-3">
-        <img id="userImage" class="is-rounded" src="{{ url_for('static', filename=user_info.profile_pic_real) }}">
+        <img id="userImage" class="is-rounded" src={{ url_for('static', filename='profile_pics'+user_info.profile_pic_real) }}>
     </div>
     <p>안녕하세요 {{ user_info.username }} 님
         <!-- Button trigger modal -->
@@ -238,7 +235,7 @@
 
                     <div class="mb-3">
                         <label for="textarea_about" class="form-label" style="color: black">나의 한마디</label>
-                        <textarea class="form-control" id="textarea_about" rows="3"></textarea>
+                        <textarea class="form-control" id="textarea_about" rows="3" >{{ user_info.profile_info }}</textarea>
                     </div>
                 </div>
                 <div class="modal-footer">

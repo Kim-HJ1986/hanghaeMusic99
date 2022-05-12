@@ -168,7 +168,7 @@
                                 if(comment['userId']==response['userInfo']['userId']){
                                     temp_html=`<div class="card" id="${num}">
                                                      <div class="card-body">
-                                                    <img id="userImage" src="/static/${profile_pic}"/>
+                                                    <img id="userImage" src="/static/profile_pics/${profile_pic}"/>
                                                       <blockquote class="blockquote mb-0">
                                                         <br>
                                                       <p>${comment['comment']}</p>
@@ -215,7 +215,7 @@
                                 else{
                                     temp_html=`<div class="card" id="${num}">
                                                      <div class="card-body">
-                                                    <img id="userImage" src="/static/${comment['userpic']}"/>
+                                                    <img id="userImage" src="/static/profile_pics/${comment['userpic']}"/>
                                                     <blockquote class="blockquote mb-0">
                                                         <br>
                                                       <p>${comment['comment']}</p>
