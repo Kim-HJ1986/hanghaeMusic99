@@ -115,15 +115,18 @@
                       $("#morebtn").show();
                     }
                   } else {
-                    for (let i = initLength; i < rows.length; i++) {
-                      let title = rows[i]["title"];
-                      let artist = rows[i]["artist"];
-                      let album = rows[i]["album"];
-                      let image = rows[i]["image"];
-                      let rank =rows[i]['rank']
-                      let temp_html = `<div class="col">
+                      for (let i = initLength; i < rows.length; i++) {
+                          let title = rows[i]["title"];
+                          let artist = rows[i]["artist"];
+                          let album = rows[i]["album"];
+                          let image = rows[i]["image"];
+                          let rank = rows[i]['rank']
+                          let number = rows[i]["number"]
+                          let temp_html = `<div class="col">
                                         <div class="card h-100">
+                                          <a href=/detail/${number}>
                                           <img src="${image}" class="card-img-top" alt="...">
+                                           </a>
                                           <div class="card-body">
                                             <h3 class="card-rank">${rank}위</h3>
                                             <h5 class="card-title">${title}</h5>
@@ -132,9 +135,9 @@
                                           </div>
                                         </div>
                                       </div>`;
-                      $("#musicList").append(temp_html);
-                      $("#morebtn").hide();
-                    }
+                          $("#musicList").append(temp_html);
+                          $("#morebtn").hide();
+                      }
                   }
                 },
               });

@@ -58,21 +58,22 @@
 
         </style>
         <script>
+            {# 아이디 입력창 관련 함수 #}
             function sign_in() {
                 let userId = $("#input-userId").val()
                 let password = $("#input-password").val()
 
                 if (userId == "") {
-                    $("#help-id-login").text("아이디를 입력해주세요.")
-                    $("#input-userId").focus()
+                    $("#help-id-login").text("아이디를 입력해주세요.") {# 아이디입력창 밑에 뜨는 문구 #}
+                    $("#input-userId").focus() {# 아이디를 입력안하고 로그인버튼을 눌렀을때 아이디입력창으로 focus #}
                     return;
                 } else {
                     $("#help-id-login").text("")
                 }
 
                 if (password == "") {
-                    $("#help-password-login").text("비밀번호를 입력해주세요.")
-                    $("#input-password").focus()
+                    $("#help-password-login").text("비밀번호를 입력해주세요.") {# 비밀번호입력창 밑에 뜨는 문구 #}
+                    $("#input-password").focus() {# 비밀번호를 입력안하고 로그인버튼을 눌렀을때 비밀번호입력창으로 focus #}
                     return;
                 } else {
                     $("#help-password-login").text("")

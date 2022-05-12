@@ -61,7 +61,9 @@
             }
         </style>
         <script>
+            {# 회원가입 버튼 함수 #}
             function sign_up() {
+                {# 전체 입력값을 받아옴 #}
                 let userId =  $("#input-userId").val()
                 let username = $("#input-username").val()
                 let password = $("#input-password").val()
@@ -125,7 +127,7 @@
                 });
 
             }
-
+            {# 아이디, 이름, 비밀번호 정규표현식 #}
             function is_userId(asValue) {
                 var regExp = /^(?=.*[a-zA-Z])[-a-zA-Z0-9_.]{2,10}$/;
                 return regExp.test(asValue);
@@ -162,7 +164,6 @@
                         userId_give: userId
                     },
                     success: function (response) {
-                        console.log(response)
                         if (response["exists"]) {
                             $("#help-id").text("이미 존재하는 아이디입니다.").removeClass("is-safe").addClass("is-danger")
                             $("#input-userId").focus()
@@ -207,9 +208,6 @@
                                         <input id="input-username" class="input" type="text" placeholder="이름">
                                         <span class="icon is-small is-left"><i class="fa fa-user"></i></span>
                                     </div>
-{#                                    <div id="btn-check-dup" class="control">#}
-{#                                        <button class="button is-sparta" onclick="check_dup()">중복확인</button>#}
-{#                                    </div>#}
 
                                 </div>
                                 <p id="help-name" class="help"> 이름은 2-10자의 한글과 영문 그리고 숫자만 입력 가능합니다.</p>
