@@ -19,10 +19,10 @@ sched = BackgroundScheduler(daemon=True)
 sched.add_job(trigger, 'interval', seconds=3)
 
 #apscheduler실행설정, Cron방식으로, 1주-53주간실행, 월요일부터일요일까지실행, 21시에실행
-sched.add_job(trigger,'cron', week='1-53', day_of_week='0-6', hour='21')
+#sched.add_job(trigger,'cron', week='1-53', day_of_week='0-6', hour='21')
 
-#apscheduler실행
-sched.start()
+#apscheduler실행 (테스트 완료 주석처리)
+#sched.start()
 
 
 from pymongo import MongoClient
