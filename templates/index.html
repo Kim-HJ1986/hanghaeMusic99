@@ -3,192 +3,183 @@
 
 <head>
     <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <meta property="og:title" content="HanghaeMusic99" />
+    <meta property="og:description" content="HanghaeMusic Top 99" />
+    <meta property="og:image" content="{{ url_for('static', filename='HanghaeMusic99.png') }}" />
 
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet"
           integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src=" https://cdnjs.cloudflare.com/ajax/libs/jquery-cookie/1.4.1/jquery.cookie.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.1/font/bootstrap-icons.css">
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"
             integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM"
             crossorigin="anonymous"></script>
+    <title>HanghaeMusic99</title>
 
-    <title>스파르타 피디아</title>
-
-    <link href="https://fonts.googleapis.com/css2?family=Gowun+Dodum&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Nanum+Pen+Script&display=swap" rel="stylesheet">
 
     <style>
         * {
-            font-family: 'Gowun Dodum', sans-serif;
+          font-family: "Nanum Pen Script", cursive;
+          box-sizing: border-box;
+        }
+        .title-form {
+          width: 100%;
+          height: 250px;
+
+          background-image: linear-gradient(
+              0deg,
+              rgba(0, 0, 0, 0.5),
+              rgba(0, 0, 0, 0.5)
+            ),
+            url("/static/music.jpeg");
+          background-position: center;
+          background-size: cover;
+
+          color: white;
+          display: flex;
+          flex-direction: column;
+          justify-content: center;
+          align-items: center;
+        }
+        .title{
+            position: relative;
+            font-size: 6rem;
+        }
+        .title-form > p{
+            font-size: xx-large;
         }
 
-        .mytitle {
-            width: 100%;
-            height: 250px;
-
-            background-image: linear-gradient(0deg, rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url('https://movie-phinf.pstatic.net/20210715_95/1626338192428gTnJl_JPEG/movie_image.jpg');
-            background-position: center;
-            background-size: cover;
-
-            color: white;
-
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .mytitle > button {
-            width: 200px;
-            height: 50px;
-
-            background-color: transparent;
-            color: white;
-
-            border-radius: 50px;
-            border: 1px solid white;
-
-            margin-top: 10px;
-        }
-
-        .mytitle > button:hover {
-            border: 2px solid white;
-        }
-
-        .mycomment {
-            color: gray;
-        }
-
-        .mycards {
+        .list {
             margin: 20px auto 0px auto;
             width: 95%;
-            max-width: 1200px;
+            max-width: 1800px;
         }
 
-        .mypost {
-            width: 95%;
-            max-width: 500px;
-            margin: 20px auto 0px auto;
-            padding: 20px;
-            box-shadow: 0px 0px 3px 0px gray;
-
+        #morebtn {
+            margin-top: 20px;
+            position: absolute;
+            left: 50%;
             display: none;
         }
-
-        .mybtns {
-            display: flex;
-            flex-direction: row;
-            align-items: center;
-            justify-content: center;
-
-            margin-top: 20px;
+        #logOut:hover{
+            cursor: pointer;
+        }
+        #profile:hover{
+            cursor: pointer;
         }
 
-        .mybtns > button {
-            margin-right: 10px;
-        }
     </style>
-    <script>
-        $(document).ready(function () {
-            listing();
-        });
 
-        function listing() {
-            $.ajax({
-                type: 'GET',
-                url: '/movie',
+    <script>
+            $(document).ready(function () {
+                initListing()
+            });
+            {# 목록 초기화 #}
+            function initListing() {
+              limit = 10;
+              init = 0;
+              $("#musicList").empty();
+              listing(limit, init);
+            }
+            {# 가져온 뮤직리스트들을 10개씩 보여줌 #}
+            function listing(limitLength, initLength) {
+              $.ajax({
+                type: "GET",
+                url: "/music_list",
                 data: {},
                 success: function (response) {
-                    let rows = response['movie']
-                    for (let i=0; i < rows.length; i++){
-                        let comment = rows[i]['comment']
-                        let desc = rows[i]['desc']
-                        let image = rows[i]['image']
-                        let star = rows[i]['star']
-                        let title = rows[i]['title']
+                  let rows = response["musics"];
+                  if (limitLength < rows.length) {
+                    for (let i = initLength; i < limitLength; i++) {
+                      let title = rows[i]["title"];
+                      let artist = rows[i]["artist"];
+                      let album = rows[i]["album"];
+                      let image = rows[i]["image"];
+                      let number = rows[i]["number"]
+                        let rank = rows[i]['rank']
+                      let temp_html = `<div class="col">
+                                        <div class="card h-100">
+                                          <a href=/detail/${number}>
+                                            <img src="${image}" class="card-img-top" alt="...">
+                                          </a>
+                                          <div class="card-body">
+                                           <h3 class="card-rank" style="font-size: xx-large">${rank}위</h3>
+                                            <h5 class="card-title" style="font-size: x-large">${title}</h5>
+                                            <p class="card-text" style="color: grey">${artist}</p>
+                                            <p class="card-text" style="color: grey">${album}</p>
+                                          </div>
+                                        </div>
+                                      </div>`;
 
-                        let star_image = '⭐'.repeat(star)
-
-                        let temp_html = `<div class="col">
-                                            <div class="card h-100">
-                                                <img src="${image}"
-                                                     class="card-img-top">
-                                                <div class="card-body">
-                                                    <h5 class="card-title">${title}</h5>
-                                                    <p class="card-text">${desc}</p>
-                                                    <p>${star_image}</p>
-                                                    <p class="mycomment">${comment}</p>
-                                                </div>
-                                            </div>
-                                        </div>`
-                        $('#cards-box').append(temp_html)
+                      $("#musicList").append(temp_html);
+                      $("#morebtn").show();
                     }
-                }
-            })
-        }
+                  } else {
+                      for (let i = initLength; i < rows.length; i++) {
+                          let title = rows[i]["title"];
+                          let artist = rows[i]["artist"];
+                          let album = rows[i]["album"];
+                          let image = rows[i]["image"];
+                          let rank = rows[i]['rank']
+                          let number = rows[i]["number"]
+                          let temp_html = `<div class="col">
+                                        <div class="card h-100">
+                                          <a href=/detail/${number}>
+                                          <img src="${image}" class="card-img-top" alt="...">
+                                           </a>
+                                          <div class="card-body">
+                                            <h3 class="card-rank">${rank}위</h3>
+                                            <h5 class="card-title">${title}</h5>
+                                            <p class="card-text">${artist}</p>
+                                            <p class="card-text">${album}</p>
+                                          </div>
+                                        </div>
+                                      </div>`;
+                          $("#musicList").append(temp_html);
+                          $("#morebtn").hide();
+                      }
+                  }
+                },
+              });
+            }
+            {# 더보기를 누르면 10개씩 더 보여줌 #}
+            function moreListing() {
+              listing((limit += 10), (init += 10));
+            }
+            function sign_out() {
+                $.removeCookie('mytoken', {path: '/'});
+                alert('로그아웃!')
+                window.location.href = "/login"
+            }
+            function profile(){
+                window.location.href="/user/{{ user_info.userId }}"
+            }
 
-        function posting() {
-            let url = $('#url').val()
-            let star = $('#star').val()
-            let comment = $('#comment').val()
 
-            $.ajax({
-                type: 'POST',
-                url: '/movie',
-                data: {url_give: url, star_give: star, comment_give: comment},
-                success: function (response) {
-                    alert(response['msg'])
-                    window.location.reload()
-                }
-            });
-        }
-
-        function open_box() {
-            $('#post-box').show()
-        }
-
-        function close_box() {
-            $('#post-box').hide()
-        }
     </script>
 </head>
 
 <body>
-<div class="mytitle">
-    <h1>항해 Music 99!</h1>
-    <button onclick="open_box()">영화 기록하기</button>
-    <a href="/detail">상세 페이지로</a>
-    <h3>{{ name }}</h3>
-</div>
-<div class="mypost" id="post-box">
+<div class = title-form>
     <div class="form-floating mb-3">
-        <input id="url" type="email" class="form-control" placeholder="name@example.com">
-        <label>영화URL</label>
+        <div class = title id ="title">HanghaeMusic99</div>
     </div>
-    <div class="input-group mb-3">
-        <label class="input-group-text" for="inputGroupSelect01">별점</label>
-        <select class="form-select" id="star">
-            <option selected>-- 선택하기 --</option>
-            <option value="1">⭐</option>
-            <option value="2">⭐⭐</option>
-            <option value="3">⭐⭐⭐</option>
-            <option value="4">⭐⭐⭐⭐</option>
-            <option value="5">⭐⭐⭐⭐⭐</option>
-        </select>
-    </div>
-    <div class="form-floating">
-        <textarea id="comment" class="form-control" placeholder="Leave a comment here"></textarea>
-        <label for="floatingTextarea2">코멘트</label>
-    </div>
-    <div class="mybtns">
-        <button onclick="posting()" type="button" class="btn btn-dark">기록하기</button>
-        <button onclick="close_box()" type="button" class="btn btn-outline-dark">닫기</button>
-    </div>
+    <p>안녕하세요 {{ user_info.username }} 님 <i onclick="profile()" class="bi bi-file-person" id="profile" title="마이 페이지"></i>
+        <i onclick="sign_out()" class="bi bi-door-open" id="logOut" style="color: red;" title="로그아웃"></i></p>
 </div>
-<div class="mycards">
-    <div class="row row-cols-1 row-cols-md-4 g-4" id="cards-box">
+<div class="list" id="list">
+    <div class="row row-cols-1 row-cols-md-5 g-4" id="musicList">
+</div>
+</div>
+</div>
 
-    </div>
 </div>
+<button onclick="moreListing()" type="button" class="btn btn-outline-dark" id="morebtn">더 보기</button>
+<footer style="margin-bottom: 20px"></footer>
 </body>
-
 </html>

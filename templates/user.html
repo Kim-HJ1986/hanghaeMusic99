@@ -1,0 +1,282 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <meta property="og:title" content="HanghaeMusic99"/>
+    <meta property="og:description" content="HanghaeMusic Top 99"/>
+    <meta property="og:image" content="{{ url_for('static', filename='HanghaeMusic99.png') }}"/>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet"
+          integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-cookie/1.4.1/jquery.cookie.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.1/font/bootstrap-icons.css">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"
+            integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM"
+            crossorigin="anonymous"></script>
+    <title>HanghaeMusic99</title>
+
+    <link href="https://fonts.googleapis.com/css2?family=Nanum+Pen+Script&display=swap" rel="stylesheet">
+
+    <style>
+        * {
+          font-family: "Nanum Pen Script", cursive;
+          box-sizing: border-box;
+        }
+        .title-form {
+          width: 100%;
+          height: 250px;
+
+          background-image: linear-gradient(
+              0deg,
+              rgba(0, 0, 0, 0.5),
+              rgba(0, 0, 0, 0.5)
+            ),
+            url("/static/music.jpeg");
+          background-position: center;
+          background-size: cover;
+
+          color: white;
+          display: flex;
+          flex-direction: column;
+          justify-content: center;
+          align-items: center;
+        }
+        #home{
+            position: absolute;
+            top: 5px;
+            left: 5px;
+            font-size: x-large;
+        }
+        #home:hover{
+            cursor: pointer;
+        }
+        #userImage{
+            height: 100px;
+            width: 100px;
+            border-radius: 70%;
+        }
+        #updateBtn{
+            background: transparent;
+            border: transparent;
+            color: green;
+        }
+        .title-form > p {
+            font-size: xx-large;
+            display: flex;
+            flex-direction: row;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .list {
+            margin: 20px auto 0px auto;
+            width: 95%;
+            max-width: 1800px;
+        }
+        #logOut{
+            color: red;
+            font-size: xx-large;
+
+        }
+        #logOut:hover{
+            cursor: pointer;
+
+        }
+        #back{
+            margin-left: 5px;
+        }
+        #back:hover{
+            cursor: pointer;
+        }
+        #heart:hover{
+            cursor:pointer;
+        }
+
+    </style>
+
+    <script>
+            $(document).ready(function () {
+                listing()
+            });
+            {# 좋아요 갯수 표현 #}
+            function num2str(count) {
+                if (count > 10000) {
+                    return parseInt(count / 1000) + "k"
+                }
+                if (count > 500) {
+                    return parseInt(count / 100) / 10 + "k"
+                }
+                if (count == 0) {
+                    return ""
+                }
+                return count
+            }
+            {# 유저가 좋아요한 뮤직 리스트를 보여줌 #}
+            function listing() {
+                $.ajax({
+                    type: "GET",
+                    url: "/user/{{ user_info.userId }}/likeMusic",
+                    data: {},
+                    success: function (response) {
+                        let rows = response["musics"];
+                        for (let i = 0; i < rows.length; i++) {
+                            let title = rows[i][0]["title"];
+                            let artist = rows[i][0]["artist"];
+                            let album = rows[i][0]["album"];
+                            let image = rows[i][0]["image"];
+                            let number = rows[i][0]["number"]
+                            let heart_count = rows[i][1]
+                            let temp_html = `<div class="col">
+                                        <div class="card h-100">
+                                          <a href=/detail/${number}>
+                                            <img src="${image}" class="card-img-top" alt="...">
+                                          </a>
+                                          <div class="card-body">
+                                            <h5 class="card-title" style="font-size: x-large">${title}</h5>
+                                            <p class="card-text" style="color: grey">${artist}</p>
+                                            <p class="card-text" style="color: grey">${album}</p>
+                                            <i class="bi bi-suit-heart-fill" id="heart" onclick="toggle_like('${title}')" style="color:red; font-size: x-large;">
+                                            <small class="count" style="color:black; margin-left: 5px">${heart_count}</small>
+                                            </i>
+                                          </div>
+                                        </div>
+                                      </div>`;
+
+                            $("#musicList").append(temp_html);
+
+                        }
+                    }
+                })
+            }
+            {# 로그아웃 #}
+            function sign_out() {
+                $.removeCookie('mytoken', {path: '/'});
+                alert('로그아웃!')
+                window.location.href = "/login"
+            }
+            {# 좋아요 한상태인지 아닌지 확인 #}
+            function toggle_like(title){
+                if ($('#heart').hasClass('bi-suit-heart-fill')) {
+                    $.ajax({
+                        type: "POST",
+                        url: "/update_like",
+                        data: {
+                            title_give: title,
+                            action_give: "unlike"
+                        },
+                        success: function (response) {
+                            $('#heart').addClass("bi-suit-heart").removeClass("bi-suit-heart-fill")
+                            $('.count').text(num2str(response['count']))
+                            window.location.reload()
+                        }
+                    })
+                }
+                else{
+                    $.ajax({
+                        type: "POST",
+                        url: "/update_like",
+                        data: {
+                            title_give: title,
+                            action_give: "like"
+                        },
+                        success: function (response) {
+                            $('#heart').addClass("bi-suit-heart-fill").removeClass("bi-suit-heart")
+                            $('.count').text(num2str(response['count']))
+                            window.location.reload()
+                        }
+                    })
+                }
+
+            }
+            {# 프로필 업데이트 #}
+            function update_profile(){
+                let username = $('#input_name').val()
+                let pic_image = $('#input_pic')[0].files[0]
+                let about = $('#textarea_about').val()
+                let form_data = new FormData()
+                form_data.append("name_give", username)
+                form_data.append("pic_give", pic_image)
+                form_data.append("about_give", about)
+
+                $.ajax({
+                    type: "POST",
+                    url: "/update_profile",
+                    data: form_data,
+                    cache: false,
+                    contentType: false,
+                    processData: false,
+                    success: function (response) {
+                        if (response["result"] == "success") {
+                            alert(response["msg"])
+                            window.location.reload()
+
+            }
+        }
+    });
+            }
+
+    </script>
+</head>
+
+<body>
+<div class = title-form>
+    <i id="home" class="bi bi-house" onclick="window.location.href='/'" title="홈으로">HanghaeMusic99</i>
+    <div class="form-floating mb-3">
+        <img id="userImage" class="is-rounded" src={{ url_for('static', filename='profile_pics'+user_info.profile_pic_real) }}>
+    </div>
+
+    <p>안녕하세요 {{ user_info.username }} 님
+         <i id="back" class="bi bi-arrow-left" onclick="history.back()" title="뒤로가기"></i>
+        <!-- Button trigger modal -->
+        <button type="button" id="updateBtn" class="bi bi-pencil-fill" data-bs-toggle="modal" data-bs-target="#exampleModal" title="프로필 수정">
+        </button>
+        <i onclick="sign_out()" id="logOut" class="bi bi-door-open" title="로그아웃"></i>
+        <!-- Modal -->
+    <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLabel" style="color: black">내 정보</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="input_name" class="form-label"style="color:black;">내 이름</label>
+                        <input type="text" class="form-control" id="input_name"
+                               placeholder="" value="{{ user_info.username }}">
+                    </div>
+                    <div style="color: black">이미지</div>
+                    <div class="input-group mb-3">
+                        <input type="file" class="form-control" id="input_pic">
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="textarea_about" class="form-label" style="color: black">나의 한마디</label>
+                        <textarea class="form-control" id="textarea_about" rows="3" >{{ user_info.profile_info }}</textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button onclick="update_profile()" type="button" class="btn btn-primary">저장</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">닫기</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    </p>
+</div>
+
+<div class="list" id="list">
+    <div class="row row-cols-1 row-cols-md-5 g-4" id="musicList">
+</div>
+</div>
+</div>
+
+</div>
+<footer style="margin-bottom: 20px"></footer>
+</body>
+</html>
