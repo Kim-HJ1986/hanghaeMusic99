@@ -29,4 +29,4 @@ Chapter1 웹개발 미니 프로젝트 (항해뮤직99)
 <iframe width="640" height="360" src="https://youtu.be/BWq5Yj9aafs" frameborder="0" gesture="media" allowfullscreen=""></iframe>
 
 
-[![항해뮤직99!](https://hanghae99.spartacodingclub.kr/exhibitions/mini1/7/A)](https://youtu.be/BWq5Yj9aafs)
+[![항해뮤직99!](https://i.ytimg.com/vi/BWq5Yj9aafs/maxresdefault.jpg)](https://youtu.be/BWq5Yj9aafs)
