@@ -26,7 +26,7 @@
 - AWS EC2(Ubuntu 18.04 LTS)
 
 ### 3. 실행화면
-[![항해뮤직99!](https://i.ytimg.com/vi/BWq5Yj9aafs/maxresdefault.jpg)](https://youtu.be/BWq5Yj9aafs)
+[![항해뮤직99!](https://i.ytimg.com/vi/BWq5Yj9aafs/hqdefault.jpg)](https://youtu.be/BWq5Yj9aafs)
 
 ### 4. 핵심기능
 - 실시간 크롤링
