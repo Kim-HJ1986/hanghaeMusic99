@@ -153,8 +153,8 @@ def sign_in():
          'exp': datetime.utcnow() + timedelta(seconds=60 * 60 * 24)  # 로그인 24시간 유지
         }
         # 회원에게 토큰을 할당해줌
-        # token = jwt.encode(payload, SECRET_KEY, algorithm='HS256').decode('utf-8')  #배포환경에선 decode를 작성해줘야함
-        token = jwt.encode(payload, SECRET_KEY, algorithm='HS256') #로컬환경에선 decode 삭제
+        token = jwt.encode(payload, SECRET_KEY, algorithm='HS256').decode('utf-8')  #배포환경에선 decode를 작성해줘야함
+        # token = jwt.encode(payload, SECRET_KEY, algorithm='HS256') #로컬환경에선 decode 삭제
 
         return jsonify({'result': 'success', 'token': token})
         # 아이디와 비밀번호가 일치하지 않으면

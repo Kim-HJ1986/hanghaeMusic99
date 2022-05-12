@@ -3,7 +3,12 @@
 
 <head>
     <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <meta property="og:title" content="HanghaeMusic99" />
+    <meta property="og:description" content="HanghaeMusic Top 99" />
+    <meta property="og:image" content="{{ url_for('static', filename='HanghaeMusic99.png') }}" />
 
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet"
           integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
@@ -116,7 +121,7 @@
             $('.count').text(num2str({{ data.count_heart }}))
         })
 
-
+         {# 댓글 남긴 시간 #}
         function time2str(date) {
             let today = new Date()
             let time = (today - date) / 1000 / 60  // 분
@@ -134,7 +139,7 @@
             }
             return `${date.getFullYear()}년 ${date.getMonth() + 1}월 ${date.getDate()}일`
         }
-
+         {# 댓글창 댓글 저장 #}
         function comments() {
             let comment = $("#comment").val()
             let today = new Date().toISOString()
@@ -170,7 +175,7 @@
             }
             return count
         }
-
+         {# 댓글 가져옴 해당유저가 남긴 댓글에만 수정 삭제를 할수있음 #}
         function get_comments() {
             let title = $('#title').text()
                 $.ajax({
@@ -260,7 +265,7 @@
                 })
             }
 
-
+         {# 리뷰 수정 #}
         function update_comments(num){
             let title = $('#title').text()
             let comment = $('#updateComment' + num).val()
@@ -280,7 +285,7 @@
                 });
             }
         }
-
+         {# 리뷰 삭제 #}
         function delete_comments(num){
             let title = $('#title').text()
                 $.ajax({
@@ -293,6 +298,7 @@
                     }
                 });
         }
+
 
         function toggle_like(){
             let title = $('#title').text()
